@@ -6,7 +6,7 @@ varying vec3 sunVec;
 uniform float timeAngle;
 uniform mat4 gbufferModelView;
 
-const float sunPathRotation = -40.0;
+// const float sunPathRotation = -40.0;
 
 void main() {
 	gl_Position = ftransform();

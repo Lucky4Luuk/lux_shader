@@ -8,8 +8,6 @@ uniform sampler2D composite;
 varying vec2 texcoord;
 varying vec3 sunVec;
 
-uniform vec3 shadowLightPosition;
-
 #include "lighting/common.glsl"
 
 #if SHADING_MODEL == LAMBERT
@@ -20,18 +18,19 @@ uniform vec3 shadowLightPosition;
 #error SHADING_MODEL must be set to a correct value
 #endif
 
-vec3 calc_light(vec3 color, vec3 normal) { //vec4 tangent
+vec3 calc_light(vec3 color, vec4 nor_light) { //vec4 tangent
 	Material mat;
 	mat.albedo = color;
 	Light light;
-	light.dir = normalize(shadowLightPosition);
+	light.dir = normalize(to_polar(nor_light.ba));
+	vec3 normal = to_polar(nor_light.rg);
 	return BRDF(mat, light, normal, vec3(0.0), vec3(0.0));
 }
 
 void main() {
 	vec3 color = texture2D(gcolor, texcoord).rgb;
-	vec3 normal = texture2D(gnormal, texcoord).rgb;
-	vec3 final = calc_light(color, normal);
+	vec4 nor_light = texture2D(gnormal, texcoord).rgba;
+	vec3 final = calc_light(color, nor_light);
 
 /* DRAWBUFFERS:0 */
 	gl_FragData[0] = vec4(final, 1.0); //gcolor
