@@ -11,3 +11,8 @@ struct Light {
     // 1. Point light
     int type;
 };
+
+#define LAMBERT 0
+#define VANILLA 1
+
+#define SHADING_MODEL LAMBERT //different shading models [LAMBERT VANILLA]
