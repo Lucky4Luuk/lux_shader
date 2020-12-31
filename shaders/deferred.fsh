@@ -8,9 +8,7 @@ uniform sampler2D composite;
 varying vec2 texcoord;
 varying vec3 sunVec;
 
-uniform float timeAngle;
-
-vec3 lightVec = sunVec*(1.0-2.0*float(timeAngle > 0.5325 && timeAngle < 0.9675));
+uniform vec3 shadowLightPosition;
 
 #include "lighting/common.glsl"
 
@@ -22,11 +20,11 @@ vec3 lightVec = sunVec*(1.0-2.0*float(timeAngle > 0.5325 && timeAngle < 0.9675))
 #error SHADING_MODEL must be set to a correct value
 #endif
 
-vec3 calc_light(vec3 color, vec3 normal) {
+vec3 calc_light(vec3 color, vec3 normal) { //vec4 tangent
 	Material mat;
 	mat.albedo = color;
 	Light light;
-	light.dir = sunVec;
+	light.dir = normalize(shadowLightPosition);
 	return BRDF(mat, light, normal, vec3(0.0), vec3(0.0));
 }
 
