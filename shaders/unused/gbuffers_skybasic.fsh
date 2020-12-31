@@ -1,5 +1,3 @@
-#version 120
-
 uniform float viewHeight;
 uniform float viewWidth;
 uniform mat4 gbufferModelView;

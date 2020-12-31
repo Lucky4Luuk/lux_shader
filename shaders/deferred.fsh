@@ -1,4 +1,4 @@
-#version 120
+#include "version.glsl"
 
 uniform sampler2D gcolor;
 uniform sampler2D gdepth; //Probably gonna re-use for roughness/other maps

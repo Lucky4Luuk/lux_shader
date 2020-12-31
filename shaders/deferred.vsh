@@ -1,4 +1,4 @@
-#version 120
+#include "version.glsl"
 
 varying vec2 texcoord;
 varying vec3 sunVec;

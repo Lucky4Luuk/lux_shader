@@ -1,4 +1,6 @@
-varying vec2 texcoord;
+#include "version.glsl"
+
+in vec2 texcoord;
 uniform sampler2D texture;
 uniform int blockEntityId;
 

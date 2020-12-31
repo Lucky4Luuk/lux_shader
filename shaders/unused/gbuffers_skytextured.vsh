@@ -1,5 +1,3 @@
-#version 120
-
 varying vec2 texcoord;
 varying vec4 glcolor;
 

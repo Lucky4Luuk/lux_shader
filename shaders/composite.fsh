@@ -1,4 +1,4 @@
-#version 120
+#include "version.glsl"
 
 uniform sampler2D gcolor;
 

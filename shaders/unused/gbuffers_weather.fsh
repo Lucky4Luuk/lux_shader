@@ -1,5 +1,3 @@
-#version 120
-
 uniform sampler2D lightmap;
 uniform sampler2D texture;
 
