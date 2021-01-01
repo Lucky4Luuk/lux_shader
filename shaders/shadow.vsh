@@ -1,6 +1,7 @@
 #include "version.glsl"
 
 #include "blockmapping.glsl"
+#include "lighting/includes.glsl"
 
 attribute vec3 mc_Entity;
 attribute vec2 mc_midTexCoord;

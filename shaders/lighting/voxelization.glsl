@@ -57,3 +57,8 @@ bool OutOfVoxelBounds(vec3 point) {
 
 	return any(greaterThanEqual(abs(point - mid), mid-vec3(0.001)));
 }
+
+bool OutOfVoxelBounds(uint point, uvec3 uplane) {
+	uint comp = (uvec3(voxelDimensions).x & uplane.x) | (uvec3(voxelDimensions).y & uplane.y) | (uvec3(voxelDimensions).z & uplane.z);
+	return point >= comp;
+}
