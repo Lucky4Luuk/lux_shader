@@ -142,10 +142,10 @@ RayHit traceRay(Ray ray, inout int steps) {
 
 	uint LOD = 0;
 	uint hit = 0;
-	float data;
+	vec4 data;
 	ivec2 vCoord;
 
-	while (1 == 1) {
+	while (true) {
 		vec3 distToBoundary = (boundary - vPos) / wDir;
 		uvec3 uplane = GetMinCompMask(distToBoundary);
 		vec3 plane = vec3(-uplane);
@@ -167,8 +167,8 @@ RayHit traceRay(Ray ray, inout int steps) {
 		uint shouldStepUp = uint((newPos.z >> (LOD+1)) != (oldPos >> (LOD+1)));
 		LOD = min(LOD + shouldStepUp, 7);
 		vCoord = VoxelToTextureSpace(uvPos, LOD);
-		data = texelFetch(shadowtex0, vCoord, 0).x;
-		hit = uint(data != volume);
+		data = texelFetch(shadowtex0, vCoord, 0);
+		hit = uint(data.x != volume);
 		uint miss = 1-hit;
 		LOD -= hit;
 
@@ -181,5 +181,6 @@ RayHit traceRay(Ray ray, inout int steps) {
     rhit.pos = vPos + wDir * MinComp((boundary - vPos) / wDir, rhit.plane);
     rhit.hit = bool(hit);
     rhit.plane *= sign(-wDir);
+    rhit.blockID = int(data.y * 255.0);
     return rhit;
 }
