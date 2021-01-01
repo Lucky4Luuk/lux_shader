@@ -8,7 +8,10 @@ uniform sampler2D composite;
 varying vec2 texcoord;
 varying vec3 sunVec;
 
+#include "lighting/includes.glsl"
 #include "lighting/common.glsl"
+#include "lighting/raytracing.glsl"
+#include "lighting/voxelization.glsl"
 
 #if SHADING_MODEL == LAMBERT
 #include "lighting/lambert.glsl"
@@ -32,6 +35,9 @@ void main() {
 	vec4 nor_light = texture2D(gnormal, texcoord).rgba;
 	vec3 final = calc_light(color, nor_light);
 
+	Ray ray = ray_from_projmat();
+	ray.pos = WorldToVoxelSpace(ray.pos);
+
 /* DRAWBUFFERS:0 */
-	gl_FragData[0] = vec4(final, 1.0); //gcolor
+	gl_FragData[0] = vec4(final + ray.dir * 0.5, 1.0); //gcolor
 }

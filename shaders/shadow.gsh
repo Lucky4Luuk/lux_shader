@@ -6,7 +6,7 @@ layout(points, max_vertices = 8) out;
 uniform sampler2D tex; //I think this is the shadow buffer
 
 #include "lighting/voxelization.glsl"
-#include "lighting/raytracing.glsl"
+#include "lighting/rt_conversion.glsl"
 
      in vec2 vTexcoord[];
 flat in vec2 vMidTexCoord[];

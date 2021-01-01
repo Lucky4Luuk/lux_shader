@@ -1,11 +1,5 @@
 //Taken pretty much entirely from https://github.com/BruceKnowsHow/Octray/blob/master/shaders/lib/raytracing/Voxelization.glsl
 
-uniform mat4 shadowModelViewInverse;
-uniform vec3 cameraPosition;
-
-uniform float near;
-uniform float far;
-
 //Set up the shadow texture settings
 const float shadowDistance           =  232;
 const int   shadowMapResolution      = 8192;
@@ -30,9 +24,21 @@ int voxelArea = voxelDimensions.x * voxelDimensions.z; //Voxel grid area (on the
 int voxelVolume = voxelDimensions.y * voxelArea; //Voxel grid volume
 
 //Convert a world space position to voxel space
+vec3 WorldToVoxelSpace(vec3 position) {
+	vec3 WtoV = vec2(0.0, floor(cameraPosition.y)).xyx + vec2(0.0, voxelRadius).yxy + gbufferModelViewInverse[3].xyz + fract(cameraPosition);
+	return position + WtoV;
+}
+
+//Version of prior function specifically for use in the shadow pass
 vec3 WorldToVoxelSpace_ShadowMap(vec3 position) {
 	vec3 WtoV = vec2(0.0, floor(cameraPosition.y)).xyx + vec2(0.0, voxelRadius).yxy;
 	return position + WtoV;
+}
+
+//Convert a voxel space position back to world space
+vec3 VoxelToWorldSpace(vec3 position) {
+	vec3 WtoV = vec2(0.0, floor(cameraPosition.y)).xyx + vec2(0.0, voxelRadius).yxy + gbufferModelViewInverse[3].xyz + fract(cameraPosition);
+	return position - WtoV;
 }
 
 //Convert a voxel position to a texture coordinate, for storing it in the shadow buffer

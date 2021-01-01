@@ -4,9 +4,8 @@ I have taken and modified bits of code from BruceKnowsHow's Octray program, rela
 Thanks!
 
 ## Notes
-### Buffers
-Order:
-- gcolor
-- gdepth
-- gnormal
-- composite
+### Voxelization
+Voxelization is done in the shadow pass.
+
+### Raytracing
+Raytracing is done in the deferred pass.
