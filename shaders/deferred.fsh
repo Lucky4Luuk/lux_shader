@@ -56,20 +56,20 @@ void main() {
 	int steps = 1;
 	RayHit hit = traceRay(ray, steps);
 	ray.pos = hit.pos - hit.plane * exp2(-12);
-	//steps is hier 9
+	//steps is hier 10
 
 	for (int i = 1; i < MAX_RAY_STEPS; i++) {
 		hit = traceRay(ray, steps);
 		ray.pos = hit.pos - hit.plane * exp2(-12);
 		if (hit.hit || steps > MAX_RAY_STEPS) break;
 	}
-	//steps is hier nog steeds 9
+	//steps is hier nog steeds 10
 
 	// final *= 0.5;
 	// final += vec3(float(steps) / float(MAX_RAY_STEPS)) * 0.5;
 	// final = vec3(float(hit.hit));
-	// final = vec3(float(steps * 1) / float(MAX_RAY_STEPS));
-	// if (steps < 10) final = vec3(0.0, 0.0, 1.0);
+	// final = vec3(float(steps * 10) / float(MAX_RAY_STEPS));
+	// if (steps < 11) final = vec3(0.0, 0.0, 1.0);
 	// if (hit.hit) final = vec3(float(steps) / float(MAX_RAY_STEPS) * 0.5 + 0.5, 0.0, 0.0);
 
 /* DRAWBUFFERS:0 */

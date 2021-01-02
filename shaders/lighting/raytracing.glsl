@@ -39,37 +39,6 @@ bool containsVoxel(uvec3 uvPos, float volume, uint LOD) {
 
 //Takes a ray in voxel space and traces it through the voxel data.
 //See notes in README
-RayHit shitTraceRay(Ray ray) {
-    uvec3 uvPos = uvec3(ray.pos);
-
-    ivec3 rayStep = ivec3(sign(ray.dir));
-    vec3 deltaDist = abs(vec3(length(ray.dir)) / ray.dir);
-    vec3 sideDist = (sign(ray.dir) * (vec3(uvPos) - ray.pos) + (sign(ray.dir) * 0.5) + 0.5) * deltaDist;
-
-    uint LOD = 0;
-    uint hit = 0;
-    int steps = 0;
-
-    for (int i = 0; i < MAX_RAY_STEPS; i++) {
-        bvec3 mask = lessThanEqual(sideDist.xyz, min(sideDist.yzx, sideDist.zxy));
-        sideDist += vec3(mask) * deltaDist;
-        uvec3 newPos = uvPos + ivec3(vec3(mask)) * rayStep * LOD;
-
-        if (LOD >= 8 || OutOfVoxelBounds(newPos)) break;
-
-        uint shouldStepUp = uint((newPos.z >> (LOD+1)) != (uvPos >> (LOD+1)));
-        LOD = min(LOD + shouldStepUp, 7);
-
-        hit = uint(containsVoxel(newPos, 1.0, LOD));
-        LOD -= hit;
-        steps += 1;
-    }
-
-    RayHit rhit;
-    rhit.hit = hit > 0;
-    rhit.steps = steps;
-    return rhit;
-}
 
 #define BinaryDot(a, b) ((a.x & b.x) | (a.y & b.y) | (a.z & b.z))
 #define BinaryMix(a, b, c) ((a & (~c)) | (b & c))

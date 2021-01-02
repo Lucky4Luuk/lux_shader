@@ -21,7 +21,7 @@ void main() {
     gl_Position = vec4(0.0);
 
     //Get the world space position of the vertex and world space normal
-    vWPos = (shadowModelViewInverse * gl_ModelViewProjectionMatrix * gl_Vertex).xyz;
+    vWPos = (shadowModelViewInverse * gl_ModelViewMatrix * gl_Vertex).xyz;
     vNormal = normalize(mat3(shadowModelViewInverse) * gl_NormalMatrix * gl_Normal);
 
     //Set up the blockID
