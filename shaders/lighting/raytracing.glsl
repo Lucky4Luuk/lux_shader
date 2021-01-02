@@ -39,7 +39,7 @@ bool containsVoxel(uvec3 uvPos) {
 //Takes a ray in voxel space and traces it through the voxel data.
 //See notes in README
 RayHit traceRay(Ray ray) {
-    uvec3 uvPos = uvec3(floor(ray.pos + 0.));
+    uvec3 uvPos = uvec3(ray.pos);
 
     ivec3 rayStep = ivec3(sign(ray.dir));
     vec3 deltaDist = abs(vec3(length(ray.dir)) / ray.dir);

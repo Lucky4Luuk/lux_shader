@@ -47,7 +47,7 @@ void main() {
 	vec3 final = calc_light(color, nor_light);
 
 	Ray ray = rayFromProjMat();
-	ray.pos = playerToVoxelSpace(ray.pos);
+	ray.pos = playerToVoxelSpace(vec3(0.0));
 
 	// vec3 vPos = vec3(playerToVoxelSpace(vec3(0.0)));
 	// vec3 wDir = normalize(GetWorldSpacePosition(tc, 1.0));
