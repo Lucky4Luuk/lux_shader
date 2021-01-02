@@ -7,7 +7,7 @@
 // const float shadowIntervalSize       = 0.000001;
 // const bool  shadowHardwareFiltering0 =    false;
 const int shadowMapResolution = 4096;
-const float shadowDistance = 64;
+const float shadowDistance = 128;
 
 //Variables regarding the real voxel grid
 const int voxelRadius = int(shadowDistance);
@@ -19,7 +19,9 @@ bool voxelOutOfBounds(vec3 voxelSpaceCoord) {
 }
 
 vec3 playerToVoxelSpace(vec3 playerSpaceCoord) {
-    return playerSpaceCoord + vec3(voxelRadius, cameraPosition.y, voxelRadius);
+    vec3 fraction = fract(cameraPosition);
+    fraction.y = 0.0;
+    return playerSpaceCoord + vec3(voxelRadius, cameraPosition.y, voxelRadius) + fraction;
 }
 
 ivec2 voxelToTextureSpace(uvec3 voxelSpaceCoord) {

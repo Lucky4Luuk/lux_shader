@@ -30,17 +30,6 @@ vec3 calc_light(vec3 color, vec4 nor_light) { //vec4 tangent
 	return BRDF(mat, light, normal, vec3(0.0), vec3(0.0));
 }
 
-vec2 tc = gl_FragCoord.xy / viewSize;
-
-vec3 GetWorldSpacePosition(vec2 coord, float depth) {
-	vec4 pos = vec4(vec3(coord, depth) * 2.0 - 1.0, 1.0);
-	pos = gbufferProjectionInverse * pos;
-	pos /= pos.w;
-	pos.xyz = mat3(gbufferModelViewInverse) * pos.xyz;
-
-	return pos.xyz;
-}
-
 void main() {
 	vec3 color = texture2D(gcolor, texcoord).rgb;
 	vec4 nor_light = texture2D(gnormal, texcoord).rgba;
@@ -49,16 +38,12 @@ void main() {
 	Ray ray = rayFromProjMat();
 	ray.pos = playerToVoxelSpace(vec3(0.0));
 
-	// vec3 vPos = vec3(playerToVoxelSpace(vec3(0.0)));
-	// vec3 wDir = normalize(GetWorldSpacePosition(tc, 1.0));
-	// Ray ray = Ray(vPos, wDir);
-
 	RayHit hit = traceRay(ray);
 
-	final *= 0.5;
+	// final *= 0.5;
 	// final += vec3(float(steps) / float(MAX_RAY_STEPS)) * 0.5;
 	// final = vec3(float(hit.hit));
-	final = vec3(float(hit.steps) / float(MAX_RAY_STEPS));
+	if (hit.hit) final = vec3(float(hit.steps) / float(MAX_RAY_STEPS));
 	// if (steps < 11) final = vec3(0.0, 0.0, 1.0);
 	// if (hit.hit) final += vec3(float(hit.steps) / float(MAX_RAY_STEPS) * 0.5, 0.0, 0.0);
 
