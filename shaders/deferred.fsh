@@ -12,6 +12,7 @@ varying vec3 sunVec;
 #include "lighting/common.glsl"
 #include "lighting/voxelization.glsl"
 #include "lighting/raytracing.glsl"
+#include "lighting/rt_conversion.glsl"
 
 #if SHADING_MODEL == LAMBERT
 #include "lighting/lambert.glsl"
@@ -40,14 +41,19 @@ void main() {
 
 	RayHit hit = traceRay(ray);
 
-	// final *= 0.5;
+	final *= 0.5;
 	// final += vec3(float(steps) / float(MAX_RAY_STEPS)) * 0.5;
 	// final = vec3(float(hit.hit));
 	// if (hit.hit) final = vec3(float(hit.steps) / float(MAX_RAY_STEPS));
-	if (hit.hit) final = vec3(hit.uv, 0.0);
+	// if (hit.hit) final = vec3(hit.uv, 0.0);
 	// if (steps < 11) final = vec3(0.0, 0.0, 1.0);
 	// if (hit.hit) final += vec3(float(hit.steps) / float(MAX_RAY_STEPS) * 0.5, 0.0, 0.0);
 
-/* DRAWBUFFERS:0 */
+	vec2 uv = atlasUVfromBlockUV(hit.uv, hit.blockUV);
+	// if (hit.hit) final = vec3(uv, 0.0);
+	// if (hit.hit) final = vec3(float(hit.blockID) / 255.0);
+	// if (hit.hit && hit.blockID != 0) vec3(1.0, 0.0, 0.0);
+	if (hit.hit) final = texture(TEXTURE_ATLAS, uv).rgb;// * 0.5 + vec3(hit.blockUV, 0.0) * 0.5;
+
 	gl_FragData[0] = vec4(final, 1.0); //gcolor
 }

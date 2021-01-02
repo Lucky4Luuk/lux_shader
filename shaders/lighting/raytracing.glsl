@@ -20,6 +20,7 @@ struct RayHit {
     int steps; //Steps needed to reach the hit
 
     //Surface information
+    vec2 blockUV;
     vec2 uv;
     vec3 normal;
     int blockID; //ID of block that was hit
@@ -33,11 +34,11 @@ vec4 getVoxelData(uvec3 uvPos) {
 
 //I believe volume can be increased to trace in a cone, but not sure
 bool containsVoxel(uvec3 uvPos) {
-    if (1.0 - getVoxelData(uvPos).a > 0.0) return true;
+    if (1.0 - getVoxelData(uvPos).w > 0.0) return true;
     return false;
 }
 
-#define MAX_RAY_STEPS 512 //The amount of steps a ray is allowed to take. Lower max steps = higher performance, but less view distance [64 128 256 512 1024]
+#define MAX_RAY_STEPS 256 //The amount of steps a ray is allowed to take. Lower max steps = higher performance, but less view distance [64 128 256 512 1024]
 
 //Takes a ray in voxel space and traces it through the voxel data.
 //See notes in README
@@ -52,6 +53,7 @@ RayHit traceRay(Ray ray) {
 
     bool hit = false;
     int steps = 0;
+    vec2 atlasUV;
 
     for (int i = 0; i < MAX_RAY_STEPS; i++) {
         // mask = lessThanEqual(sideDist.xyz, min(sideDist.yzx, sideDist.zxy));
@@ -61,8 +63,11 @@ RayHit traceRay(Ray ray) {
 
         if (voxelOutOfBounds(uvPos)) break;
 
-        hit = containsVoxel(uvPos);
+        // hit = containsVoxel(uvPos);
+        vec4 data = getVoxelData(uvPos);
+        hit = (1.0 - data.w) > 0.0;
         steps += 1;
+        atlasUV = data.xy;
         if (hit) break;
     }
 
@@ -75,15 +80,16 @@ RayHit traceRay(Ray ray) {
     //Calculate surface information
     vec3 endRayPos = ray.dir / dot(mask * ray.dir, vec3(1)) * dot(mask * (vec3(uvPos) + step(ray.dir, vec3(0)) - ray.pos), vec3(1)) + ray.pos;
     if (abs(mask.x) > 0.0) {
-        rhit.uv = endRayPos.yz;
+        rhit.blockUV = endRayPos.yz;
     }
     if (abs(mask.y) > 0.0) {
-        rhit.uv = endRayPos.xz;
+        rhit.blockUV = endRayPos.xz;
     }
     if (abs(mask.z) > 0.0) {
-        rhit.uv = endRayPos.xy;
+        rhit.blockUV = endRayPos.xy;
     }
-    rhit.uv = fract(rhit.uv);
+    rhit.blockUV = fract(rhit.blockUV);
+    rhit.uv = atlasUV;
     rhit.normal = vec3(mask) * rayStep;
 
     return rhit;

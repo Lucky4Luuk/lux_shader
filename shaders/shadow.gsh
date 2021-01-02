@@ -3,16 +3,15 @@
 layout(triangles) in;
 layout(points, max_vertices = 1) out;
 
-uniform sampler2D tex; //I think this is the shadow buffer
-
 #include "lighting/includes.glsl"
 #include "lighting/voxelization.glsl"
-#include "lighting/rt_conversion.glsl"
 
 in vec3 positionPS[];
 in vec3 normalWS[];
 in vec4 color[];
 in int blockId[];
+in vec2 midTexcoord[];
+in vec2 texcoord[];
 
 out vec4 shadowMapData;
 
@@ -29,8 +28,11 @@ void main() {
     if(voxelOutOfBounds(voxelPosition)) return;
 
     vec2 texturePosition = voxelToTextureSpace(uvec3(voxelPosition));
+    // vec2 atlasUV = texcoord[0]; //TODO: Might be the wrong corner.
+    // vec2 atlasUV = min(texcoord[0], min(texcoord[1], texcoord[2]));
+    vec2 atlasUV = midTexcoord[0] - abs(midTexcoord[0] - texcoord[0]);
 
-    shadowMapData = vec4(color[0].rgb, 0.0);
+    shadowMapData = vec4(atlasUV, 0.0, 0.0); //W channel is 1.0 when there's no block, otherwise there is a block. Perhaps we can store blockID here?
 
     gl_Position = vec4(((texturePosition + 0.5) / shadowMapResolution) * 2.0 - 1.0, 0.0, 1.0);
     EmitVertex();
