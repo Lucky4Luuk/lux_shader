@@ -9,6 +9,7 @@ Ray rayFromProjMat() {
     uv = uv * 2.0 - 1.0; //Map from [0, 1] to [-1, 1] on both axis
     vec3 origin = (gbufferProjectionInverse * vec4(uv, -1.0, 1.0) * near).xyz;
     vec3 direction = (gbufferProjectionInverse * vec4(uv * (far - near), far + near, far - near)).xyz;
+    direction = mat3(gbufferModelViewInverse) * direction;
     return Ray(origin, normalize(direction));
 }
 
@@ -50,7 +51,7 @@ RayHit traceRay(Ray ray) {
     for (int i = 0; i < MAX_RAY_STEPS; i++) {
         bvec3 mask = lessThanEqual(sideDist.xyz, min(sideDist.yzx, sideDist.zxy));
         sideDist += vec3(mask) * deltaDist;
-        uvPos += uvec3(vec3(mask)) * uvec3(rayStep);
+        uvPos += uvec3(vec3(mask)) * rayStep;
 
         if (voxelOutOfBounds(uvPos)) break;
 

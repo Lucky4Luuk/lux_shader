@@ -47,7 +47,6 @@ void main() {
 	vec3 final = calc_light(color, nor_light);
 
 	Ray ray = rayFromProjMat();
-	ray.dir = mat3(gbufferModelViewInverse) * ray.dir;
 	ray.pos = playerToVoxelSpace(ray.pos);
 
 	// vec3 vPos = vec3(playerToVoxelSpace(vec3(0.0)));
@@ -59,9 +58,9 @@ void main() {
 	final *= 0.5;
 	// final += vec3(float(steps) / float(MAX_RAY_STEPS)) * 0.5;
 	// final = vec3(float(hit.hit));
-	// final = vec3(float(hit.steps) / float(MAX_RAY_STEPS));
+	final = vec3(float(hit.steps) / float(MAX_RAY_STEPS));
 	// if (steps < 11) final = vec3(0.0, 0.0, 1.0);
-	if (hit.hit) final += vec3(float(hit.steps) / float(MAX_RAY_STEPS) * 0.5 + 0.25, 0.0, 0.0);
+	// if (hit.hit) final += vec3(float(hit.steps) / float(MAX_RAY_STEPS) * 0.5, 0.0, 0.0);
 
 /* DRAWBUFFERS:0 */
 	gl_FragData[0] = vec4(final, 1.0); //gcolor
