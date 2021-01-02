@@ -1,8 +1,7 @@
 #include "version.glsl"
 
-flat in vec4 data0;
-flat in vec4 data1; //Currently unused
+in vec4 shadowMapData;
 
 void main() {
-	gl_FragData[0] = data0;
+	gl_FragData[0] = shadowMapData;
 }

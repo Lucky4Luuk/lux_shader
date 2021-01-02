@@ -1,12 +1,18 @@
 #include "version.glsl"
 
-uniform sampler2D gcolor;
+uniform sampler2D colortex0;
+
+uniform sampler2D shadowtex0;
+uniform sampler2D shadowcolor0;
 
 varying vec2 texcoord;
 
 void main() {
-	vec3 color = texture2D(gcolor, texcoord).rgb;
-
-/* DRAWBUFFERS:0 */
-	gl_FragData[0] = vec4(color, 1.0); //gcolor
+	// if(texcoord.x > 0.5 || texcoord.y > 0.5) {
+    //     gl_FragData[0] = texture2D(colortex0, texcoord);
+    // }else {
+	// 	vec4 shadow_data = texture2D(shadowcolor0, texcoord * 2);
+    //     gl_FragData[0] = vec4(shadow_data.rgb * (1.0 - shadow_data.a), 1.0);
+    // }
+	gl_FragData[0] = texture2D(colortex0, texcoord);
 }

@@ -11,3 +11,4 @@ uniform mat4 gbufferModelViewInverse;
 uniform vec3 cameraPosition;
 
 uniform sampler2D shadowtex0;
+uniform sampler2D shadowcolor0;

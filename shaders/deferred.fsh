@@ -46,31 +46,22 @@ void main() {
 	vec4 nor_light = texture2D(gnormal, texcoord).rgba;
 	vec3 final = calc_light(color, nor_light);
 
-	// Ray ray = rayFromProjMat();
-	// ray.pos = WorldToVoxelSpace(ray.pos);
+	Ray ray = rayFromProjMat();
+	ray.dir = mat3(gbufferModelViewInverse) * ray.dir;
+	ray.pos = playerToVoxelSpace(ray.pos);
 
-	vec3 vPos = WorldToVoxelSpace(vec3(0.0));
-	vec3 wDir = normalize(GetWorldSpacePosition(tc, 1.0));
-	Ray ray = Ray(vPos, wDir);
+	// vec3 vPos = vec3(playerToVoxelSpace(vec3(0.0)));
+	// vec3 wDir = normalize(GetWorldSpacePosition(tc, 1.0));
+	// Ray ray = Ray(vPos, wDir);
 
-	int steps = 1;
-	RayHit hit = traceRay(ray, steps);
-	ray.pos = hit.pos - hit.plane * exp2(-12);
-	//steps is hier 10
+	RayHit hit = traceRay(ray);
 
-	for (int i = 1; i < MAX_RAY_STEPS; i++) {
-		hit = traceRay(ray, steps);
-		ray.pos = hit.pos - hit.plane * exp2(-12);
-		if (hit.hit || steps > MAX_RAY_STEPS) break;
-	}
-	//steps is hier nog steeds 10
-
-	// final *= 0.5;
+	final *= 0.5;
 	// final += vec3(float(steps) / float(MAX_RAY_STEPS)) * 0.5;
 	// final = vec3(float(hit.hit));
-	// final = vec3(float(steps * 10) / float(MAX_RAY_STEPS));
+	// final = vec3(float(hit.steps) / float(MAX_RAY_STEPS));
 	// if (steps < 11) final = vec3(0.0, 0.0, 1.0);
-	// if (hit.hit) final = vec3(float(steps) / float(MAX_RAY_STEPS) * 0.5 + 0.5, 0.0, 0.0);
+	if (hit.hit) final += vec3(float(hit.steps) / float(MAX_RAY_STEPS) * 0.5 + 0.25, 0.0, 0.0);
 
 /* DRAWBUFFERS:0 */
 	gl_FragData[0] = vec4(final, 1.0); //gcolor
