@@ -43,7 +43,8 @@ void main() {
 	// final *= 0.5;
 	// final += vec3(float(steps) / float(MAX_RAY_STEPS)) * 0.5;
 	// final = vec3(float(hit.hit));
-	if (hit.hit) final = vec3(float(hit.steps) / float(MAX_RAY_STEPS));
+	// if (hit.hit) final = vec3(float(hit.steps) / float(MAX_RAY_STEPS));
+	if (hit.hit) final = vec3(hit.uv, 0.0);
 	// if (steps < 11) final = vec3(0.0, 0.0, 1.0);
 	// if (hit.hit) final += vec3(float(hit.steps) / float(MAX_RAY_STEPS) * 0.5, 0.0, 0.0);
 

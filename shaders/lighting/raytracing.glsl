@@ -17,9 +17,12 @@ struct RayHit {
     bool hit; //True if the ray hit something, false if it reached the max distance without hitting anything
     uvec3 pos; //Hit position in voxel space
     vec3 dir; //Incoming ray direction
-
-    int blockID; //ID of block that was hit
     int steps; //Steps needed to reach the hit
+
+    //Surface information
+    vec2 uv;
+    vec3 normal;
+    int blockID; //ID of block that was hit
 };
 
 //Get the voxel data at the specified location
@@ -45,11 +48,14 @@ RayHit traceRay(Ray ray) {
     vec3 deltaDist = abs(vec3(length(ray.dir)) / ray.dir);
     vec3 sideDist = (sign(ray.dir) * (vec3(uvPos) - ray.pos) + (sign(ray.dir) * 0.5) + 0.5) * deltaDist;
 
+    vec3 mask;
+
     bool hit = false;
     int steps = 0;
 
     for (int i = 0; i < MAX_RAY_STEPS; i++) {
-        bvec3 mask = lessThanEqual(sideDist.xyz, min(sideDist.yzx, sideDist.zxy));
+        // mask = lessThanEqual(sideDist.xyz, min(sideDist.yzx, sideDist.zxy));
+        mask = step(sideDist.xyz, sideDist.yzx) * step(sideDist.xyz, sideDist.zxy);
         sideDist += vec3(mask) * deltaDist;
         uvPos += uvec3(vec3(mask)) * rayStep;
 
@@ -65,5 +71,20 @@ RayHit traceRay(Ray ray) {
     rhit.steps = steps;
     rhit.pos = uvPos;
     rhit.dir = ray.dir;
+
+    //Calculate surface information
+    vec3 endRayPos = ray.dir / dot(mask * ray.dir, vec3(1)) * dot(mask * (vec3(uvPos) + step(ray.dir, vec3(0)) - ray.pos), vec3(1)) + ray.pos;
+    if (abs(mask.x) > 0.0) {
+        rhit.uv = endRayPos.yz;
+    }
+    if (abs(mask.y) > 0.0) {
+        rhit.uv = endRayPos.xz;
+    }
+    if (abs(mask.z) > 0.0) {
+        rhit.uv = endRayPos.xy;
+    }
+    rhit.uv = fract(rhit.uv);
+    rhit.normal = vec3(mask) * rayStep;
+
     return rhit;
 }
