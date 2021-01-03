@@ -14,6 +14,7 @@ in vec4 color[];
 in int blockId[];
 flat in vec2 midTexcoord[];
 in vec2 texcoord[];
+in vec2 lmcoord[];
 
 flat out vec4 shadowMapData;
 
@@ -34,7 +35,10 @@ void main() {
     vec2 atlasUV = midTexcoord[0] - abs(midTexcoord[0] - texcoord[0]);
     float atlasUV_packed = packTexcoord(atlasUV);
 
-    shadowMapData = vec4(color[0].rgb, 0.0); //W channel is 1.0 when there's no block, otherwise there is a block. Perhaps we can store blockID here?
+    float blockLight = (float(lmcoord[0].x + lmcoord[1].x + lmcoord[2].x) / 3.0) / 240.0;
+    vec3 hsvColor = RT_hsv(color[0].rgb);
+
+    shadowMapData = vec4(hsvColor.xy, blockLight, 0.0); //W channel is 1.0 when there's no block, otherwise there is a block. Perhaps we can store blockID here?
 
     for (int lod = 0; lod < LOD_LEVELS; lod++) {
         vec2 texturePosition = voxelToTextureSpace(uvec3(voxelPosition), lod);

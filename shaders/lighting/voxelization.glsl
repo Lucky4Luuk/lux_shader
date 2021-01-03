@@ -1,3 +1,5 @@
+#ifndef _INCLUDE_VOXELIZATION_GLSL_
+#define _INCLUDE_VOXELIZATION_GLSL_
 //Set up the shadow texture settings
 // const float shadowDistance           =  232;
 // const int   shadowMapResolution      = 8192;
@@ -47,3 +49,4 @@ ivec2 voxelToTextureSpace(uvec3 voxelSpaceCoord, int lod) {
 
     return ivec2(index % uint(shadowMapResolution), index / uint(shadowMapResolution));
 }
+#endif

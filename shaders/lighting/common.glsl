@@ -1,4 +1,5 @@
 #include "../settings.glsl"
+#include "../constants.glsl"
 
 struct Material {
     vec3 albedo;
@@ -13,8 +14,6 @@ struct Light {
     // 1. Point light
     int type;
 };
-
-const float PI = 3.1415926535897932384626433832795028841971693993751058209749;
 
 vec2 to_uv(in vec3 n)
 {

@@ -6,12 +6,13 @@ uniform sampler2D normalmap;
 uniform sampler2D specular;
 uniform sampler2D shadow;
 
+uniform mat4 gbufferModelViewInverse;
+
 varying vec2 lmcoord;
 varying vec2 texcoord;
 varying vec4 glcolor;
 varying vec3 normal;
-
-uniform vec3 sunPosition;
+varying vec3 lightDir;
 
 #include "lighting/common.glsl"
 
@@ -20,7 +21,7 @@ void main() {
 	color *= texture2D(lightmap, lmcoord);
 
 	gl_FragData[0] = color; //gcolor
-	gl_FragData[2] = vec4(to_uv(normal), to_uv(normalize(sunPosition))); //gnormal
+	gl_FragData[2] = vec4(to_uv(normal), to_uv(lightDir)); //gnormal
 }
 
 //attribute vec3 at_tangent;
