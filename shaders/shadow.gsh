@@ -10,10 +10,10 @@ in vec3 positionPS[];
 in vec3 normalWS[];
 in vec4 color[];
 in int blockId[];
-in vec2 midTexcoord[];
+flat in vec2 midTexcoord[];
 in vec2 texcoord[];
 
-out vec4 shadowMapData;
+flat out vec4 shadowMapData;
 
 //Voxelization
 void main() {

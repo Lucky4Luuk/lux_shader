@@ -11,7 +11,7 @@ out vec3 positionPS;
 out vec3 normalWS;
 out vec4 color;
 out int blockId;
-out vec2 midTexcoord;
+flat out vec2 midTexcoord;
 out vec2 texcoord;
 
 void main() {

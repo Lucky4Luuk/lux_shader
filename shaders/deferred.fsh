@@ -55,5 +55,6 @@ void main() {
 	// if (hit.hit && hit.blockID != 0) vec3(1.0, 0.0, 0.0);
 	if (hit.hit) final = texture(TEXTURE_ATLAS, uv).rgb;// * 0.5 + vec3(hit.blockUV, 0.0) * 0.5;
 
+	/* DRAWBUFFERS:0 */
 	gl_FragData[0] = vec4(final, 1.0); //gcolor
 }
