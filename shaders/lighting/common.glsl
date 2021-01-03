@@ -1,3 +1,5 @@
+#include "../settings.glsl"
+
 struct Material {
     vec3 albedo;
 };
@@ -11,11 +13,6 @@ struct Light {
     // 1. Point light
     int type;
 };
-
-#define LAMBERT 0
-#define VANILLA 1
-
-#define SHADING_MODEL LAMBERT //different shading models [LAMBERT VANILLA]
 
 const float PI = 3.1415926535897932384626433832795028841971693993751058209749;
 

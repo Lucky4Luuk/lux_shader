@@ -1,3 +1,6 @@
+#include "../settings.glsl"
+#include "rt_conversion.glsl"
+
 struct Ray {
     vec3 pos; //Origin
     vec3 dir; //Direction
@@ -16,6 +19,7 @@ Ray rayFromProjMat() {
 struct RayHit {
     bool hit; //True if the ray hit something, false if it reached the max distance without hitting anything
     uvec3 pos; //Hit position in voxel space
+    vec3 rayPos; //Final position of the ray
     vec3 dir; //Incoming ray direction
     int steps; //Steps needed to reach the hit
 
@@ -24,21 +28,19 @@ struct RayHit {
     vec2 uv;
     vec3 normal;
     int blockID; //ID of block that was hit
+    vec3 color; //Block color
 };
 
 //Get the voxel data at the specified location
-vec4 getVoxelData(uvec3 uvPos) {
-    ivec2 vCoord = voxelToTextureSpace(uvPos);
+vec4 getVoxelData(uvec3 uvPos, int lod) {
+    ivec2 vCoord = voxelToTextureSpace(uvPos, lod);
     return texelFetch(shadowcolor0, vCoord, 0);
 }
 
-//I believe volume can be increased to trace in a cone, but not sure
-bool containsVoxel(uvec3 uvPos) {
-    if (1.0 - getVoxelData(uvPos).w > 0.0) return true;
-    return false;
+float getVoxelDepth(uvec3 uvPos, int lod) {
+    ivec2 vCoord = voxelToTextureSpace(uvPos, lod);
+    return texelFetch(shadowtex0, vCoord, 0).r;
 }
-
-#define MAX_RAY_STEPS 256 //The amount of steps a ray is allowed to take. Lower max steps = higher performance, but less view distance [64 128 256 512 1024]
 
 //Takes a ray in voxel space and traces it through the voxel data.
 //See notes in README
@@ -54,28 +56,33 @@ RayHit traceRay(Ray ray) {
     bool hit = false;
     int steps = 0;
     vec2 atlasUV;
+    vec3 color;
+
+    int LOD = 0;
 
     for (int i = 0; i < MAX_RAY_STEPS; i++) {
-        // mask = lessThanEqual(sideDist.xyz, min(sideDist.yzx, sideDist.zxy));
         mask = step(sideDist.xyz, sideDist.yzx) * step(sideDist.xyz, sideDist.zxy);
-        sideDist += vec3(mask) * deltaDist;
-        uvPos += uvec3(vec3(mask)) * rayStep;
+        sideDist = sideDist + vec3(mask) * deltaDist;
+        uvPos += uvec3(vec3(mask)) * rayStep; //* (LOD + 1)
 
         if (voxelOutOfBounds(uvPos)) break;
 
-        // hit = containsVoxel(uvPos);
-        vec4 data = getVoxelData(uvPos);
+        vec4 data = getVoxelData(uvPos, 0);
+        color = data.xyz;
         hit = (1.0 - data.w) > 0.0;
         steps += 1;
-        atlasUV = data.xy;
         if (hit) break;
     }
+
+    float depth = getVoxelDepth(uvPos, 0);
+    atlasUV = unpackTexcoord(depth);
 
     RayHit rhit;
     rhit.hit = hit;
     rhit.steps = steps;
     rhit.pos = uvPos;
     rhit.dir = ray.dir;
+    rhit.color = color;
 
     //Calculate surface information
     vec3 endRayPos = ray.dir / dot(mask * ray.dir, vec3(1)) * dot(mask * (vec3(uvPos) + step(ray.dir, vec3(0)) - ray.pos), vec3(1)) + ray.pos;
@@ -91,6 +98,7 @@ RayHit traceRay(Ray ray) {
     rhit.blockUV = fract(rhit.blockUV);
     rhit.uv = atlasUV;
     rhit.normal = vec3(mask) * rayStep;
+    rhit.rayPos = endRayPos;
 
     return rhit;
 }
