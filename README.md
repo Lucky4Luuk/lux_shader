@@ -8,6 +8,8 @@ Thanks!
 - Octree traversal to improve the speed of raytracing outside
 - In the GI step, sample the skybox, for nice soft shadows (sun has a size) and better sun contribution (also fixes bug with attenuation)
 - Invalidate old GI samples based on depth to remove lots of artifacting
+- Implement a proper lighting model
+- Implement reflection (and possibly refraction)
 - Implement different block types
 - Denoise the GI samples stored
 - Compose all passes correctly, so entities and such are still visible
