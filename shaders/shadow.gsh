@@ -4,9 +4,9 @@
 layout(triangles) in;
 layout(points, max_vertices = LOD_LEVELS) out;
 
-#include "lighting/includes.glsl"
-#include "lighting/voxelization.glsl"
-#include "lighting/rt_conversion.glsl"
+#include "lib/includes.glsl"
+#include "lib/voxelization.glsl"
+#include "lib/rt_conversion.glsl"
 
 in vec3 positionPS[];
 in vec3 normalWS[];
@@ -38,7 +38,7 @@ void main() {
     float blockLight = (float(lmcoord[0].x + lmcoord[1].x + lmcoord[2].x) / 3.0) / 240.0;
     vec3 hsvColor = RT_hsv(color[0].rgb);
 
-    shadowMapData = vec4(hsvColor.xy, blockLight, 0.0); //W channel is 1.0 when there's no block, otherwise there is a block. Perhaps we can store blockID here?
+    shadowMapData = vec4(hsvColor.xy, blockLight, float(blockId[0]) / 255.0); //W channel is 1.0 when there's no block, otherwise there is a block. Also stores the block ID
 
     for (int lod = 0; lod < LOD_LEVELS; lod++) {
         vec2 texturePosition = voxelToTextureSpace(uvec3(voxelPosition), lod);

@@ -1,11 +1,11 @@
 #include "version.glsl"
 
-#include "lighting/includes.glsl"
+#include "lib/includes.glsl"
 
 attribute vec3 mc_Entity;
 attribute vec2 mc_midTexCoord;
 
-#include "lighting/voxelization.glsl"
+#include "lib/voxelization.glsl"
 
 out vec3 positionPS;
 out vec3 normalWS;

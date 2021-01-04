@@ -14,11 +14,11 @@ varying vec4 glcolor;
 varying vec3 normal;
 varying vec3 lightDir;
 
-#include "lighting/common.glsl"
+#include "lib/common.glsl"
 
 void main() {
 	vec4 color = texture2D(texture, texcoord) * glcolor;
-	color *= texture2D(lightmap, lmcoord);
+	// color *= texture2D(lightmap, lmcoord);
 
 	gl_FragData[0] = color; //gcolor
 	gl_FragData[2] = vec4(to_uv(normal), to_uv(lightDir)); //gnormal
