@@ -5,9 +5,12 @@ The entire voxelization was implemented by Spheya however.
 Thanks!
 
 ## TODO
-- Octree traversal to improve the speed of raytracing outside - IMPORTANT
-- In the GI step, sample the skybox, for nice soft shadows (sun has a size) and better sun contribution
-- Invalidate old GI samples based on depth to remove lots of artifacting - IMPORTANT
+- Octree traversal to improve the speed of raytracing outside
+- In the GI step, sample the skybox, for nice soft shadows (sun has a size) and better sun contribution (also fixes bug with attenuation)
+- Invalidate old GI samples based on depth to remove lots of artifacting
+- Implement different block types
+- Denoise the GI samples stored
+- Compose all passes correctly, so entities and such are still visible
 
 ## Notes
 ### Voxelization
