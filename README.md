@@ -4,6 +4,9 @@ I have taken and modified bits of code from BruceKnowsHow's Octray program, rela
 The entire voxelization was implemented by Spheya however.
 Thanks!
 
+## Ideas
+- Only calculate indirect light for pixels in a checkerboard pattern, and fill the rest in. Big performance save
+
 ## Notes
 ### Voxelization
 Voxelization is done in the shadow pass.
