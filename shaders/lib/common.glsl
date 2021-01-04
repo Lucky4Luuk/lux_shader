@@ -41,3 +41,7 @@ vec3 to_polar(in vec2 uv)
     //n = normalize(n);
     return n;
 }
+
+float luma(vec3 rgb) {
+    return rgb.x*0.299 + rgb.y*0.587 + rgb.z*0.114;
+}

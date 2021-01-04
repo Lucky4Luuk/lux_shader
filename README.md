@@ -4,8 +4,10 @@ I have taken and modified bits of code from BruceKnowsHow's Octray program, rela
 The entire voxelization was implemented by Spheya however.
 Thanks!
 
-## Ideas
-- Only calculate indirect light for pixels in a checkerboard pattern, and fill the rest in. Big performance save
+## TODO
+- Octree traversal to improve the speed of raytracing outside - IMPORTANT
+- In the GI step, sample the skybox, for nice soft shadows (sun has a size) and better sun contribution
+- Invalidate old GI samples based on depth to remove lots of artifacting - IMPORTANT
 
 ## Notes
 ### Voxelization

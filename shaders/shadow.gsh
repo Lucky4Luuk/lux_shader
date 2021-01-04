@@ -7,6 +7,7 @@ layout(points, max_vertices = LOD_LEVELS) out;
 #include "lib/includes.glsl"
 #include "lib/voxelization.glsl"
 #include "lib/rt_conversion.glsl"
+#include "lib/blockmapping.glsl"
 
 in vec3 positionPS[];
 in vec3 normalWS[];
@@ -20,8 +21,9 @@ flat out vec4 shadowMapData;
 
 //Voxelization
 void main() {
-    //Don't store entities
-    if(blockId[0] + blockId[1] + blockId[2] == 0) return;
+    //Early returns for unsupported types
+    if(blockId[0] + blockId[1] + blockId[2] == 0) return;                           //Entities
+    if(isWater(blockId[0]) || isWater(blockId[1]) || isWater(blockId[2])) return;   //Water
 
     vec3 triangleCenter = (positionPS[0] + positionPS[1] + positionPS[2]) / 3.0;
     vec3 inVoxelCoord = triangleCenter - normalWS[0] * 0.01;

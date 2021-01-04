@@ -13,6 +13,7 @@ varying vec2 texcoord;
 #include "lib/raytracing.glsl"
 #include "lib/rt_conversion.glsl"
 #include "lib/reprojection.glsl"
+#include "lib/denoise.glsl"
 
 #if SHADING_MODEL == LAMBERT
 #include "lib/lambert.glsl"
@@ -45,10 +46,13 @@ void main() {
 	vec3 final;
 	vec3 frameGI;
 	// vec3 fullGI = texture(GI_TEMPORAL_MAP, texcoord).rgb;
+	ivec2 tc = ivec2(gl_FragCoord.xy);
 	vec3 giUV = reprojectTexcoords(currDepth);
 	float giUVErr = max(abs(giUV.x - 0.5), abs(giUV.y - 0.5));
+	// ivec2 giUVpc = ivec2(giUV.xy * vec2(viewWidth, viewHeight));
 	//Checking error will remove the weird smearing on the outer border of pixels
 	vec3 fullGI = (giUVErr > 0.49999) ? vec3(0.0) : texture(GI_TEMPORAL_MAP, giUV.xy, 0).rgb;
+	// vec3 fullGI = (giUVErr > 0.49999) ? vec3(0.0) : texelFetch(GI_TEMPORAL_MAP, giUVpc.xy, 0).rgb;
 
 	vec2 uv = atlasUVfromBlockUV(hit.uv, hit.blockUV);
 	if (hit.hit) {
@@ -60,10 +64,11 @@ void main() {
 		final = calcBRDF(color, to_polar(nor_light.rg), normalize(to_polar(nor_light.ba)));
 	}
 
-	/* DRAWBUFFERS:065 */
+	/* DRAWBUFFERS:06 */
+	// float samplesToStore = 128.0 / MAX_INDIRECT_SAMPLES;
+	float samplesToStore = 32.0;
 	gl_FragData[0] = vec4(final, 1.0); //gcolor
-	gl_FragData[1] = vec4(fullGI * (63.0 / 64.0) + frameGI * (1.0 / 64.0), 1.0);
-	gl_FragData[2] = vec4(currDepth); //colortex5
+	gl_FragData[1] = vec4(fullGI * ((samplesToStore - 1.0) / samplesToStore) + frameGI * (1.0 / samplesToStore), 1.0);
 
 	#if DEBUG == TRUE && DEBUG_MODE == DEBUG_NORMALS
 	if (hit.hit) gl_FragData[0] = vec4(hit.normal, 1.0); //gcolor

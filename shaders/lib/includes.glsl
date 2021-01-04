@@ -13,6 +13,7 @@ uniform float near;
 uniform float far;
 
 uniform float seed; //Supposedly random every frame
+uniform int frameCounter;
 
 uniform mat4 gbufferProjectionInverse;
 uniform mat4 gbufferModelViewInverse;
@@ -41,9 +42,13 @@ uniform sampler2D colortex6;
 #define GI_TEMPORAL_MAP colortex6
 const bool colortex6Clear = false;
 const int colortex6Format = RGBA32F;
-const bool colortex6MipmapEnabled = true;
+const bool colortex6MipmapEnabled = false;
+
+uniform sampler2D colortex0;
+#define PREVIOUS_FRAME colortex0
 
 uniform sampler2D lightmap;
 uniform vec3 sunDirection;
+uniform float sunAngle;
 
 #endif

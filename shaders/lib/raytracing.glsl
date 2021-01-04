@@ -145,14 +145,10 @@ vec3 calcLight(int blockID, vec3 color, vec3 normal, vec3 rayPos, vec3 rayDir) {
 	vec3 sunVec = normalize(sunDirection);
 	float atten = castShadowRay(rayPos, sunVec);
 	float NdotL = dot(normalize(normal), -sunVec);
-	//Sky contribution
-	float skyContribution = atten * NdotL; //Wherever there is no shadow, the sky can be seen?
-	vec3 skyLight = skyColor * skyContribution;
-	skyLight *= 0.15; //Multiplier to not overdo sky contribution
     float emissive = float(isEmissive(blockID)) * 3.5;
     atten = clamp(atten * NdotL, 0.0, 1.0);
     atten += emissive;
-	return color * atten * sunLightPower + skyLight; //Clamp is only to fake the sky contribution for now
+	return color * atten * sunLightPower; //Clamp is only to fake the sky contribution for now
 }
 
 vec3 calcIndirectBounce(vec3 rayPos, vec3 rayDir, vec3 normal, inout uvec2 rng) {
@@ -163,7 +159,7 @@ vec3 calcIndirectBounce(vec3 rayPos, vec3 rayDir, vec3 normal, inout uvec2 rng) 
         ray.pos = pos;
         ray.dir = sampleHemisphere(-normal, rng);
 
-        RayHit hit = traceRay(ray, MAX_RAY_STEPS / 4);
+        RayHit hit = traceRay(ray, MAX_RAY_STEPS / 8);
         if (hit.hit) {
             vec2 uv = atlasUVfromBlockUV(hit.uv, hit.blockUV);
             vec3 color = texture(TEXTURE_ATLAS, uv).rgb * hit.color;
@@ -172,6 +168,7 @@ vec3 calcIndirectBounce(vec3 rayPos, vec3 rayDir, vec3 normal, inout uvec2 rng) 
             normal = hit.normal;
             pos = hit.rayPos - normal * 0.02;
         } else {
+            if (b == 0) bounceCol += skyColor * 0.15 * ceil(sunAngle); //Sky contribution
             break;
         }
     }
@@ -183,9 +180,10 @@ vec3 calcIndirectLight(vec3 rayPos, vec3 rayDir, vec3 normal) {
     vec3 gi = vec3(0.0);
     // uint rng = uint(seed * 1024.0);
     // uint rng = uint((rayPos.x + rayPos.y + rayPos.z + seed) * 1046527.0);
-    uvec2 rng = uvec2((rayPos.xz + rayPos.y + seed) * 1046527.0);
+    vec3 p = rayPos + fract(cameraPosition.y);
+    uvec2 rng = uvec2((p.xz + p.y + seed) * 1046527.0);
     for (int i = 0; i < MAX_INDIRECT_SAMPLES; i++) {
         gi += calcIndirectBounce(rayPos, rayDir, normal, rng);
     }
-    return gi / MAX_BOUNCES;
+    return gi / MAX_INDIRECT_SAMPLES;
 }
