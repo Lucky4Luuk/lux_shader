@@ -5,8 +5,7 @@ The entire voxelization was implemented by Spheya however.
 Thanks!
 
 ## TODO
-- Octree traversal to improve the speed of raytracing outside
-- Instead of octree traversal, I should instead jump my ray to the surface according to the depth buffer. Then, in composite.fsh, I can check the depth buffer for translucent blocks, and do a proper trace from there instead. When the ray refracts, I will be forced to trace a full ray regardless, so I can separate this
+- Refraction in composite.fsh. Downside is that we have to get rid of the pixels we calculated before, wherever refraction needs to happen
 - In the GI step, sample the skybox, for nice soft shadows (sun has a size) and better sun contribution (also fixes bug with attenuation)
 - Invalidate old GI samples based on depth to remove lots of artifacting
 - Implement a proper lighting model
