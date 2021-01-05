@@ -11,7 +11,7 @@
 //Raytracing
 #define MAX_RAY_STEPS 16 //The amount of steps a ray is allowed to take. Lower max steps = higher performance, but less view distance [4 8 16 32 64 128 256]
 #define MAX_INDIRECT_SAMPLES 4 //The amount of samples for indirect light. More samples = less noise/performance [1 2 4 8 16 32 64 128]
-#define MAX_BOUNCES 1 //The amount of bounces light is allowed to do. More bounces = more accurate light, but less performance [1 2 4 8]
+#define MAX_BOUNCES 1 //The amount of bounces light is allowed to do. More bounces = more accurate light, but less performance [1 2 3 4 8]
 
 //Surface
 #define TEXTURE_RESOLUTION 16 //Resolution of textures in your resourcepack [8 16 32 64 256]

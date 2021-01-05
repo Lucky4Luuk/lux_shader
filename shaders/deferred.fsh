@@ -73,7 +73,8 @@ void main() {
 	vec3 normal = to_polar(nor_light.xy);
 	frameGI = calcIndirectLight(ray.pos, ray.dir, -normal);
 	int blockID = int(nor_light.z * 255.0);
-	final = calcLight(blockID, color, -normal, ray.pos, ray.dir) + fullGI;
+	vec3 light = vec3(calcLight(blockID, -normal, ray.pos, ray.dir)) + fullGI;
+	final = color * light;
 
 	/* DRAWBUFFERS:06 */
 	// float samplesToStore = 128.0 / MAX_INDIRECT_SAMPLES;
