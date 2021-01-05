@@ -136,7 +136,7 @@ float castShadowRay(vec3 surfacePos, vec3 lightDir) {
     ray.pos = surfacePos - lightDir * 0.0002; //Small offset to avoid clipping the current voxel immediately
     ray.dir = lightDir;
 
-    RayHit hit = traceRay(ray, MAX_RAY_STEPS);
+    RayHit hit = traceRay(ray, MAX_RAY_STEPS * 4); //Shitty hack because otherwise, sun will leak quite fast
     return float(1 - int(hit.hit));
 }
 
@@ -144,11 +144,20 @@ float castShadowRay(vec3 surfacePos, vec3 lightDir) {
 vec3 calcLight(int blockID, vec3 color, vec3 normal, vec3 rayPos, vec3 rayDir) { //rayPos is position of hit, rayDir is incoming ray direction
 	vec3 sunVec = normalize(sunDirection);
 	float atten = castShadowRay(rayPos, sunVec);
+    // float atten = 1.0; //Fuck the shadow ray, we are sampling the skybox during our indirect light sampling
 	float NdotL = dot(normalize(normal), -sunVec);
     float emissive = float(isEmissive(blockID)) * 3.5;
     atten = clamp(atten * NdotL, 0.0, 1.0);
+    // atten = NdotL;
     atten += emissive;
 	return color * atten * sunLightPower; //Clamp is only to fake the sky contribution for now
+}
+
+vec3 sampleSky(vec3 direction) {
+    // float d = pow(max(dot(direction, normalize(sunDirection)), 0.0), 300.0) * 60;
+    float d = 0.0;
+    return skyColor * 0.15 * ceil(sunAngle) + d;
+    // return vec3(0.8, 0.85, 0.95) + d;
 }
 
 vec3 calcIndirectBounce(vec3 rayPos, vec3 rayDir, vec3 normal, inout uvec2 rng) {
@@ -159,7 +168,7 @@ vec3 calcIndirectBounce(vec3 rayPos, vec3 rayDir, vec3 normal, inout uvec2 rng) 
         ray.pos = pos;
         ray.dir = sampleHemisphere(-normal, rng);
 
-        RayHit hit = traceRay(ray, MAX_RAY_STEPS / 8);
+        RayHit hit = traceRay(ray, MAX_RAY_STEPS);
         if (hit.hit) {
             vec2 uv = atlasUVfromBlockUV(hit.uv, hit.blockUV);
             vec3 color = texture(TEXTURE_ATLAS, uv).rgb * hit.color;
@@ -168,8 +177,7 @@ vec3 calcIndirectBounce(vec3 rayPos, vec3 rayDir, vec3 normal, inout uvec2 rng) 
             normal = hit.normal;
             pos = hit.rayPos - normal * 0.02;
         } else {
-            if (b == 0) bounceCol += skyColor * 0.15 * ceil(sunAngle); //Sky contribution
-            break;
+            if (b == 0) bounceCol += sampleSky(rayDir); //Sky contribution
         }
     }
     return bounceCol / MAX_BOUNCES;

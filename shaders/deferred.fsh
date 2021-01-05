@@ -32,6 +32,19 @@ vec3 calcBRDF(vec3 color, vec3 normal, vec3 lightDir) { //vec4 tangent
 	return BRDF(mat, light, normal, vec3(0.0), vec3(0.0));
 }
 
+vec3 worldPosFromDepth(float depth) {
+	float z = depth * 2.0 - 1.0; //Map range
+
+	vec4 clipSpacePosition = vec4(texcoord * 2.0 - 1.0, z, 1.0); //Map texcoord range
+	vec4 viewSpacePosition = gbufferProjectionInverse * clipSpacePosition;
+
+	viewSpacePosition /= viewSpacePosition.w;
+
+	vec4 worldSpacePosition = gbufferModelViewInverse * viewSpacePosition;
+
+	return worldSpacePosition.xyz;
+}
+
 void main() {
 	float currDepth = texture(depthtex0, texcoord).r;
 
@@ -41,28 +54,26 @@ void main() {
 	Ray ray = rayFromProjMat();
 	ray.pos = playerToVoxelSpace(vec3(0.0));
 
-	RayHit hit = traceRay(ray, MAX_RAY_STEPS);
+	//Calculate ray position from depth buffer
+	// vec3 viewPos = viewPosFromDepth(currDepth);
+	// ray.pos += ray.dir * viewPos.z;
+	// ray.pos -= ray.dir;
+	ray.pos = playerToVoxelSpace(worldPosFromDepth(currDepth));
+
+	// RayHit hit = traceRay(ray, MAX_RAY_STEPS);
 
 	vec3 final;
 	vec3 frameGI;
-	// vec3 fullGI = texture(GI_TEMPORAL_MAP, texcoord).rgb;
 	ivec2 tc = ivec2(gl_FragCoord.xy);
 	vec3 giUV = reprojectTexcoords(currDepth);
 	float giUVErr = max(abs(giUV.x - 0.5), abs(giUV.y - 0.5));
-	// ivec2 giUVpc = ivec2(giUV.xy * vec2(viewWidth, viewHeight));
 	//Checking error will remove the weird smearing on the outer border of pixels
 	vec3 fullGI = (giUVErr > 0.49999) ? vec3(0.0) : texture(GI_TEMPORAL_MAP, giUV.xy, 0).rgb;
-	// vec3 fullGI = (giUVErr > 0.49999) ? vec3(0.0) : texelFetch(GI_TEMPORAL_MAP, giUVpc.xy, 0).rgb;
 
-	vec2 uv = atlasUVfromBlockUV(hit.uv, hit.blockUV);
-	if (hit.hit) {
-		color = texture(TEXTURE_ATLAS, uv).rgb * hit.color;
-		vec3 normal = normalize(hit.normal);
-		frameGI = calcIndirectLight(hit.rayPos, hit.dir, normal);
-		final = calcLight(hit.blockID, color, normal, hit.rayPos, hit.dir) + fullGI;
-	} else {
-		final = calcBRDF(color, to_polar(nor_light.rg), normalize(to_polar(nor_light.ba)));
-	}
+	vec3 normal = to_polar(nor_light.xy);
+	frameGI = calcIndirectLight(ray.pos, ray.dir, -normal);
+	int blockID = int(nor_light.z * 255.0);
+	final = calcLight(blockID, color, -normal, ray.pos, ray.dir) + fullGI;
 
 	/* DRAWBUFFERS:06 */
 	// float samplesToStore = 128.0 / MAX_INDIRECT_SAMPLES;

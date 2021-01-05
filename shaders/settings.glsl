@@ -9,7 +9,7 @@
 #define LOD_LEVELS 4 //The max level of detail of the octree that needs to be generated. Higher levels will require a higher shadowmap texture to store the data, increasing memory usage, but could potentially speed up raytracing. [1 2 4 8]
 
 //Raytracing
-#define MAX_RAY_STEPS 128 //The amount of steps a ray is allowed to take. Lower max steps = higher performance, but less view distance [64 128 256 512 1024]
+#define MAX_RAY_STEPS 16 //The amount of steps a ray is allowed to take. Lower max steps = higher performance, but less view distance [4 8 16 32 64 128 256]
 #define MAX_INDIRECT_SAMPLES 4 //The amount of samples for indirect light. More samples = less noise/performance [1 2 4 8 16 32 64 128]
 #define MAX_BOUNCES 1 //The amount of bounces light is allowed to do. More bounces = more accurate light, but less performance [1 2 4 8]
 
