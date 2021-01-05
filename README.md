@@ -6,6 +6,7 @@ Thanks!
 
 ## TODO
 - Octree traversal to improve the speed of raytracing outside
+- Instead of octree traversal, we should do the raytracing in composite.fsh, and use the 3 depth buffers we have available to jump our ray to the surface of a solid object, and we can use 1 of the 3 depth textures to check for translucent objects in the way, to do refraction.
 - In the GI step, sample the skybox, for nice soft shadows (sun has a size) and better sun contribution (also fixes bug with attenuation)
 - Invalidate old GI samples based on depth to remove lots of artifacting
 - Implement a proper lighting model
