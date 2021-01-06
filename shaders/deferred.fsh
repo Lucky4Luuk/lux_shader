@@ -50,6 +50,7 @@ void main() {
 
 	vec3 color = texture2D(gcolor, texcoord).rgb;
 	vec4 nor_light = texture2D(gnormal, texcoord).rgba;
+	vec3 normal = to_polar(nor_light.xy);
 
 	Ray ray = rayFromProjMat();
 	ray.pos = playerToVoxelSpace(vec3(0.0));
@@ -63,26 +64,34 @@ void main() {
 	// RayHit hit = traceRay(ray, MAX_RAY_STEPS);
 
 	vec3 final;
-	vec3 frameGI;
 	ivec2 tc = ivec2(gl_FragCoord.xy);
 	vec3 giUV = reprojectTexcoords(currDepth);
 	float giUVErr = max(abs(giUV.x - 0.5), abs(giUV.y - 0.5));
 	//Checking error will remove the weird smearing on the outer border of pixels
-	vec3 fullGI = (giUVErr > 0.49999) ? vec3(0.0) : texture(GI_TEMPORAL_MAP, giUV.xy, 0).rgb;
+	vec4 giData = texture(GI_TEMPORAL_MAP, giUV.xy, 0);
+	if (giUVErr > 0.49999) giData = vec4(0.0);
+	vec3 fullGI = giData.rgb;
 
-	vec3 normal = to_polar(nor_light.xy);
-	frameGI = calcIndirectLight(ray.pos, ray.dir, -normal);
 	int blockID = int(nor_light.z * 255.0);
-	vec3 light = vec3(calcLight(blockID, -normal, ray.pos, ray.dir)) + fullGI;
+	vec3 sunLight = calcSunLight(ray.pos, ray.dir, -normal);
+	vec3 frameGI = calcIndirectLight(ray.pos, ray.dir, -normal) + sunLight;
+	vec3 finalGI = fullGI * giData.a + frameGI * (1.0 - giData.a);
+	vec3 light = vec3(calcLight(blockID, -normal, ray.pos, ray.dir)) + finalGI;
 	final = color * light;
 
-	/* DRAWBUFFERS:06 */
 	// float samplesToStore = 128.0 / MAX_INDIRECT_SAMPLES;
-	float samplesToStore = 32.0;
+	float samplesToStore = 256.0;
+	float sampleMod = 1.0 / samplesToStore;
+	float fastMod = clamp(giData.a + sampleMod, 0.0, 1.0);
+	/* DRAWBUFFERS:06 */
 	gl_FragData[0] = vec4(final, 1.0); //gcolor
-	gl_FragData[1] = vec4(fullGI * ((samplesToStore - 1.0) / samplesToStore) + frameGI * (1.0 / samplesToStore), 1.0);
+	gl_FragData[1] = vec4(fullGI * (1.0 - sampleMod) + frameGI * sampleMod, fastMod);
 
 	#if DEBUG == TRUE && DEBUG_MODE == DEBUG_NORMALS
-	if (hit.hit) gl_FragData[0] = vec4(hit.normal, 1.0); //gcolor
+	gl_FragData[0] = vec4(normal, 1.0); //gcolor
+	#endif
+
+	#if DEBUG == TRUE && DEBUG_MODE == DEBUG_DEPTH
+	gl_FragData[0] = vec4(vec3(currDepth), 1.0);
 	#endif
 }

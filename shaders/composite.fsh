@@ -23,7 +23,7 @@ vec3 ACESFilm(vec3 x)
 }
 
 vec4 tonemap(vec4 color) {
-	// color.rgb = pow(color.rgb, 2.2); //Linear -> gamma
+	color.rgb = pow(color.rgb, 2.2); //Linear -> gamma
 	//For now, I'm hard coding ACES, but in the future, this should be a user option
 	return vec4(ACESFilm(color.rgb), color.a);
 }

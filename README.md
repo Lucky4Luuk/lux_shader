@@ -6,7 +6,7 @@ Thanks!
 
 ## TODO
 - Refraction in composite.fsh. Downside is that we have to get rid of the pixels we calculated before, wherever refraction needs to happen
-- In the GI step, sample the skybox, for nice soft shadows (sun has a size) and better sun contribution (also fixes bug with attenuation)
+- In the GI step, sample the skybox, for nice soft shadows (sun has a size) and better sun contribution
 - Invalidate old GI samples based on depth to remove lots of artifacting
 - Implement a proper lighting model
 - Implement reflection (and possibly refraction)

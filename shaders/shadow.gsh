@@ -9,6 +9,10 @@ layout(points, max_vertices = LOD_LEVELS) out;
 #include "lib/rt_conversion.glsl"
 #include "lib/blockmapping.glsl"
 
+//Triangle flags
+flat out int mode; //0 = voxel data, 1 = shadowmap data
+
+//Voxel data
 in vec3 positionPS[];
 in vec3 normalWS[];
 in vec4 color[];
@@ -19,8 +23,8 @@ in vec2 lmcoord[];
 
 flat out vec4 shadowMapData;
 
-//Voxelization
 void main() {
+    //Voxelization
     //Early returns for unsupported types
     if(blockId[0] + blockId[1] + blockId[2] == 0) return;                           //Entities
     if(isWater(blockId[0]) || isWater(blockId[1]) || isWater(blockId[2])) return;   //Water
@@ -32,19 +36,18 @@ void main() {
 
     if(voxelOutOfBounds(voxelPosition)) return;
 
-    // vec2 atlasUV = texcoord[0]; //TODO: Might be the wrong corner.
-    // vec2 atlasUV = min(texcoord[0], min(texcoord[1], texcoord[2]));
     vec2 atlasUV = midTexcoord[0] - abs(midTexcoord[0] - texcoord[0]);
     float atlasUV_packed = packTexcoord(atlasUV);
 
     float blockLight = (float(lmcoord[0].x + lmcoord[1].x + lmcoord[2].x) / 3.0) / 240.0;
     vec3 hsvColor = RT_hsv(color[0].rgb);
 
-    shadowMapData = vec4(hsvColor.xy, blockLight, float(blockId[0]) / 255.0); //W channel is 1.0 when there's no block, otherwise there is a block. Also stores the block ID
+    shadowMapData = vec4(hsvColor.xy, 0.0, float(blockId[0]) / 255.0); //W channel is 1.0 when there's no block, otherwise there is a block. Also stores the block ID
 
     for (int lod = 0; lod < LOD_LEVELS; lod++) {
         vec2 texturePosition = voxelToTextureSpace(uvec3(voxelPosition), lod);
         gl_Position = vec4(((texturePosition + 0.5) / shadowMapResolution) * 2.0 - 1.0, atlasUV_packed, 1.0);
         EmitVertex();
+        // EndPrimitive();
     }
 }

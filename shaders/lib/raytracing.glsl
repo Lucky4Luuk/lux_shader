@@ -3,6 +3,7 @@
 #include "rt_conversion.glsl"
 #include "blockmapping.glsl"
 #include "random.glsl"
+#include "../constants.glsl"
 
 struct Ray {
     vec3 pos; //Origin
@@ -32,7 +33,6 @@ struct RayHit {
     vec3 normal;
     int blockID; //ID of block that was hit, see block.properties
     vec3 color; //Block color
-    float blockLight;
 };
 
 //Get the voxel data at the specified location
@@ -48,7 +48,8 @@ float getVoxelDepth(uvec3 uvPos, int lod) {
 
 //Takes a ray in voxel space and traces it through the voxel data.
 //See notes in README
-RayHit traceRay(Ray ray, int max_steps) {
+RayHit traceRay(Ray ray, int max_steps, int maxLod = 0) {
+    int lod = 0;
     uvec3 uvPos = uvec3(ray.pos);
 
     vec3 rayInv = 1.0 / ray.dir;
@@ -62,27 +63,25 @@ RayHit traceRay(Ray ray, int max_steps) {
     int steps = 0;
     vec2 atlasUV;
     vec2 color;
-    float blockLight;
     int blockID;
 
-    int LOD = 0;
     float t = 0;
 
     for (int i = 0; i < max_steps; i++) {
+        uvPos = uvPos >> lod;
         mask = step(sideDist.xyz, sideDist.yzx) * step(sideDist.xyz, sideDist.zxy);
-        // vec3 mini = (vec3(uvPos) - ray.pos + 0.5 - 0.5 * vec3(rayStep)) * rayInv;
-        // t = max(mini.x, max(mini.y, mini.z));
         sideDist = sideDist + vec3(mask) * deltaDist;
-        uvPos += uvec3(vec3(mask)) * rayStep; //* (LOD + 1)
+        uvPos += uvec3(vec3(mask)) * rayStep;
+        uvPos = uvPos << lod;
 
         if (voxelOutOfBounds(uvPos)) break;
 
-        vec4 data = getVoxelData(uvPos, 0);
+        vec4 data = getVoxelData(uvPos, lod);
         color = data.xy; //HSV without V
-        blockLight = data.z;
         blockID = int(data.w * 255.0);
         hit = (1.0 - data.w) > 0.0;
         steps += 1;
+        if (i % 16 == 15) lod = min(lod + 1, maxLod);
         if (hit) break;
     }
 
@@ -95,7 +94,6 @@ RayHit traceRay(Ray ray, int max_steps) {
     rhit.pos = uvPos;
     rhit.dir = ray.dir;
     rhit.color = RT_rgb(vec3(color, 1.0));
-    rhit.blockLight = blockLight;
     rhit.blockID = blockID;
 
     vec3 mini = (vec3(uvPos) - ray.pos + 0.5 - 0.5 * vec3(rayStep)) * rayInv;
@@ -131,6 +129,18 @@ vec3 sampleHemisphere(vec3 normal, inout uvec2 rng) {
     return normalize(normal + vec3(b.x, b.y, uv.x));
 }
 
+vec3 generateUnitVector(vec2 hash) {
+    hash.x *= TAU; hash.y = hash.y * 2.0 - 1.0;
+    return vec3(vec2(sin(hash.x), cos(hash.x)) * sqrt(1.0 - hash.y * hash.y), hash.y);
+}
+
+vec3 sampleCone(vec3 normal, float angle, inout uvec2 rng) {
+    vec2 xy = random_vec2(rng);
+    vec3 dir = generateUnitVector(xy);
+    float noiseAngle = acos(dot(dir, normal)) * (angle / PI);
+    return sin(noiseAngle) * normalize(cross(normal, dir)) + cos(noiseAngle) * normal;
+}
+
 float castShadowRay(vec3 surfacePos, vec3 lightDir) {
     Ray ray;
     ray.pos = surfacePos - lightDir * 0.0002; //Small offset to avoid clipping the current voxel immediately
@@ -143,12 +153,8 @@ float castShadowRay(vec3 surfacePos, vec3 lightDir) {
 //TODO: Find a better place for this function
 float calcLight(int blockID, vec3 normal, vec3 rayPos, vec3 rayDir) { //rayPos is position of hit, rayDir is incoming ray direction
 	vec3 sunVec = normalize(sunDirection);
-	float atten = castShadowRay(rayPos, sunVec);
-	float NdotL = dot(normalize(normal), -sunVec);
-    float emissive = float(isEmissive(blockID)) * 3.2;
-    atten = clamp(atten * NdotL, 0.0, 1.0);
-    atten += emissive;
-	return atten * sunLightPower;
+    float emissive = float(isEmissive(blockID)) * 7.5;
+	return emissive * sunLightPower;
     // return NdotL + emissive;
 }
 
@@ -164,6 +170,7 @@ vec3 calcIndirectBounce(vec3 rayPos, vec3 rayDir, vec3 normal, inout uvec2 rng) 
     vec3 colorMask = vec3(1.0);
     vec3 pos = rayPos - normal * 0.02; //Small offset to avoid clipping the current voxel immediately
     for (int b = 0; b < MAX_BOUNCES; b++) {
+        float NdotL = dot(normal, -sunDirection);
         Ray ray;
         ray.pos = pos;
         ray.dir = sampleHemisphere(-normal, rng);
@@ -177,6 +184,10 @@ vec3 calcIndirectBounce(vec3 rayPos, vec3 rayDir, vec3 normal, inout uvec2 rng) 
             accumLight += directLight * color * colorMask;
             normal = hit.normal;
             pos = hit.rayPos - normal * 0.02;
+        } else {
+            float skyIntensity = 1.0;
+            accumLight += sampleSky(rayDir) * skyIntensity;
+            break;
         }
     }
     return accumLight;
@@ -193,4 +204,30 @@ vec3 calcIndirectLight(vec3 rayPos, vec3 rayDir, vec3 normal) {
         gi += calcIndirectBounce(rayPos, rayDir, normal, rng);
     }
     return gi / MAX_INDIRECT_SAMPLES;
+}
+
+vec3 calcSunLight(vec3 rayPos, vec3 rayDir, vec3 normal) {
+    vec3 sunVec = normalize(sunDirection);
+    vec3 totalLight = vec3(0.0);
+
+    //Main ray
+    Ray ray;
+    ray.pos = rayPos - normal * 0.005;
+    ray.dir = sunVec;
+
+    RayHit hit = traceRay(ray, 48, 0);
+    if (!hit.hit) totalLight = vec3(1.0);
+
+    vec3 p = rayPos + fract(cameraPosition.y);
+    uvec2 rng = uvec2((p.xz + p.y + seed) * 1046527.0);
+
+    const int MAX_SUN_SAMPLES = 2;
+    for (int i = 0; i < MAX_SUN_SAMPLES; i++) {
+        // ray.dir = sampleCone(sunVec, 30, rng); //Something seems wrong here, inverting the direction changes nothing about the result
+        ray.dir = sampleHemisphere(sunVec, rng);
+        RayHit hit = traceRay(ray, 32, 0);
+        if (!hit.hit) totalLight += vec3(1.0) / MAX_SUN_SAMPLES;
+    }
+
+    return totalLight;
 }

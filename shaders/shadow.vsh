@@ -7,6 +7,7 @@ attribute vec2 mc_midTexCoord;
 
 #include "lib/voxelization.glsl"
 
+//Voxel data
 out vec3 positionPS;
 out vec3 normalWS;
 out vec4 color;
@@ -24,6 +25,6 @@ void main() {
     texcoord = gl_MultiTexCoord0.xy;
     lmcoord = gl_MultiTexCoord1.xy;
 
-    //Vertex position isn't needed, so we set it to [0.0, 0.0]
+    //Vertex position isn't used, so we set it to [0.0, 0.0]
     gl_Position = vec4(0.0);
 }
