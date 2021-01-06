@@ -48,6 +48,5 @@ void main() {
         vec2 texturePosition = voxelToTextureSpace(uvec3(voxelPosition), lod);
         gl_Position = vec4(((texturePosition + 0.5) / shadowMapResolution) * 2.0 - 1.0, atlasUV_packed, 1.0);
         EmitVertex();
-        // EndPrimitive();
     }
 }

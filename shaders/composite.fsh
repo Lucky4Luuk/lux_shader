@@ -1,7 +1,7 @@
 #include "version.glsl"
 #include "settings.glsl"
 
-uniform sampler2D colortex0;
+#include "lib/denoise.glsl"
 
 #if DEBUG == TRUE && DEBUG_MODE == DEBUG_VOXEL_OCTREE
 uniform sampler2D shadowtex0;
@@ -23,14 +23,16 @@ vec3 ACESFilm(vec3 x)
 }
 
 vec4 tonemap(vec4 color) {
-	color.rgb = pow(color.rgb, 2.2); //Linear -> gamma
+	// color.rgb = pow(color.rgb, vec3(2.2)); //Linear -> gamma
 	//For now, I'm hard coding ACES, but in the future, this should be a user option
 	return vec4(ACESFilm(color.rgb), color.a);
 }
 
 void main() {
 	/* DRAWBUFFERS:0 */
-	gl_FragData[0] = tonemap(texture2D(colortex0, texcoord));
+    vec4 col = tonemap(texture(colortex0, texcoord));
+    // if (col.a == 0.0) texture(skytexture, texcoord); //Aaaa
+	gl_FragData[0] = col;
 	#if DEBUG == TRUE && DEBUG_MODE == DEBUG_VOXEL_OCTREE
 	if(texcoord.x > 0.5 || texcoord.y > 0.5) {
         gl_FragData[0] = texture2D(colortex0, texcoord);

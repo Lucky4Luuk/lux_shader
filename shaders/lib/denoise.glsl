@@ -4,8 +4,9 @@
 #include "includes.glsl"
 // #include "random.glsl"
 
-vec3 denoiseTexture(sampler2D tex, vec2 texcoord, vec3 c) {
-    return texture(tex, texcoord, 0).rgb;
+vec4 denoiseTexture(sampler2D tex, vec2 texcoord) {
+    
+    return texture(tex, texcoord, 0);
 }
 
 #endif
