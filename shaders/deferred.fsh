@@ -66,7 +66,7 @@ void main() {
 	// ray.pos -= ray.dir;
 	ray.pos = playerToVoxelSpace(worldPosFromDepth(currDepth));
 
-	float samplesToStore = 64.0;
+	float samplesToStore = 1024.0;
 
 	vec3 final;
 	ivec2 tc = ivec2(gl_FragCoord.xy);
